@@ -7,11 +7,22 @@
 		display: block;
 		margin: 100px auto;
 	}
+	button {
+		display: inline-block;
+	}
+	.buttons {
+		margin: -80px auto;
+		width: 200px;
+	}
 	</style>
 	<title>The Snake Game</title>
 </head>
 <body>
 	<canvas id="canvas" width="450" height="450"></canvas>
+	<div class="buttons">	
+		<button id="fast">Speed up</button>
+		<button id="low">Speed down</button>
+	</div>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
 	<script>
 	$(document).ready(function (){
@@ -32,7 +43,8 @@
 		var cellWidth = 10,
 			direction,
 			food,
-			score;
+			score,
+			speed = 100;
 
 		//create the snake now
 		var snakeArray;	//an array to make up the snake
@@ -45,7 +57,7 @@
 
 			//move the snake every 100ms
 			if(typeof game_loop != 'undefined')	clearInterval(game_loop);
-			game_loop = setInterval(paint, 100);
+			game_loop = setInterval(paint, speed);
 		}
 
 		init();
@@ -152,6 +164,13 @@
 			else if(keycode == '38'&& direction != 'down')	direction = 'up';
 			else if(keycode == '39'&& direction != 'left')	direction = 'right';
 			else if(keycode == '40'&& direction != 'up')	direction = 'down';
+		});
+
+		$('#fast').click(function(){
+			speed -= 20;
+		});
+		$('#low').click(function(){
+			speed += 20;
 		});
 	});
 	</script>
