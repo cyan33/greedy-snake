@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<style>
+	#canvas{
+		display: block;
+		margin: 100px auto;
+	}
+	</style>
+	<title>The Snake Game</title>
+</head>
+<body>
+	<canvas id="canvas" width="450" height="450"></canvas>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
+	<script>
+	$(document).ready(function (){
+		//make a canvas
+		var canvas = $("#canvas")[0];
+		var ctx = canvas.getContext('2d');
+		var width = $("canvas").width();
+		var height = $("canvas").height();
+
+		//paint the background
+		ctx.fillStyle = 'white';
+		ctx.fillRect(0, 0, width, height);
+		ctx.strokeStyle = 'black';
+		ctx.strokeRect(0, 0, width, height);
+
+
+		//save cell width in a variable for easy control
+		var cellWidth = 10,
+			direction,
+			food,
+			score;
+
+		//create the snake now
+		var snakeArray;	//an array to make up the snake
+
+		function init (){
+			direction = 'right'; //initial direction
+			createSnake();
+			createFood();
+			score = 0; 
+
+			//move the snake every 100ms
+			if(typeof game_loop != 'undefined')	clearInterval(game_loop);
+			game_loop = setInterval(paint, 100);
+		}
+
+		init();
+
+		function createSnake (){
+			var length = 5; //init length
+			snakeArray = [];
+			for(var i = length - 1; i >= 0; i--){
+				//create the horizontal snake starting from the top left
+				snakeArray.push({x: i, y: 0});
+			}
+		}
+
+		function createFood (){
+			food = {
+				//generate the coordinate, which is 0-44
+				x: Math.round(Math.random()*44),
+				y: Math.round(Math.random()*44)
+			};
+		}
+
+		//paint the snake
+		function paint (){
+			//paint the canvas background again in every frame
+			ctx.fillStyle = 'white';
+			ctx.fillRect(0, 0, width, height);
+			ctx.strokeStyle = 'black';
+			ctx.strokeRect(0, 0, width, height);
+
+			//movement
+			//pop out the tail cell and append it in front of the head cell
+			//position of the head cell
+			var nx = snakeArray[0].x;
+			var ny = snakeArray[0].y;
+
+			if(direction == 'right')	nx++;
+			else if(direction == 'left')	nx--;
+			else if(direction == 'up')	ny--;
+			else if(direction == 'down') ny++;
+
+			//if the snake hits the wall
+			if(nx == -1 || nx == width/cellWidth || ny == -1 || ny == height/cellWidth || checkCollision(nx, ny, snakeArray)) {
+				//restart the game
+				var answer = confirm("Game Over, press OK to restart");
+				if(answer === true){
+					init();
+					return;
+				}else{
+					clearInterval(game_loop);
+					return;
+				}
+
+			}
+
+			//if the snake eats the food, the logic of which is easy
+			//create a new head instead of moving the tail
+			if(nx == food.x && ny == food.y) {
+				var tail = {x: nx, y: ny};
+				score++;
+				//create new food
+				createFood();
+			}
+			else{
+				var tail = snakeArray.pop();	//pop out the tail of the snake
+				tail.x = nx; tail.y = ny;
+			}
+			//append the head
+			snakeArray.unshift(tail);
+
+			//paint each cell of the snake
+			for(var i = 0; i < snakeArray.length; i++){
+				var cell = snakeArray[i];
+				paintCell(cell.x, cell.y);
+			}
+
+			//paint the food
+			paintCell(food.x, food.y);
+			//paint the score
+			var scoreText = 'Score: ' + score;
+			ctx.fillText(scoreText, 5, height - 5);
+		}
+
+		function paintCell (x, y){
+			ctx.fillStyle = 'blue';
+			ctx.fillRect(x * cellWidth, y * cellWidth, cellWidth, cellWidth);
+			ctx.strokeStyle = 'white';
+			ctx.strokeRect(x * cellWidth, y * cellWidth, cellWidth, cellWidth);
+		}
+
+		function checkCollision (x, y, array){
+			//check if the (x, y) already exists in the array
+			for(var i = 0; i < array.length; i++){
+				if(array[i].x === x && array[i].y === y){
+					return true;
+				}
+			}
+			return false;
+		}
+
+		//add the keyboard control
+		$(document).keydown(function (e){
+			var keycode = e.which;
+			if(keycode == '37' && direction != 'right')	direction = 'left';
+			else if(keycode == '38'&& direction != 'down')	direction = 'up';
+			else if(keycode == '39'&& direction != 'left')	direction = 'right';
+			else if(keycode == '40'&& direction != 'up')	direction = 'down';
+		});
+	});
+	</script>
+</body>
+</html>
